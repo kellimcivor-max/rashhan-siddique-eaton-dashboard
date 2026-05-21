@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Morning, Rashhan — Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5}
+.shell{max-width:1180px;margin:0 auto;padding:32px 24px 64px}
+.greeting{padding:40px 0 32px}
+.greeting .hello{font-size:36px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.greeting .date{font-size:15px;color:#86868b;margin-top:4px;font-weight:400}
+.greeting .powered{display:inline-flex;align-items:center;gap:6px;background:#1d1d1f;color:#fff;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-top:14px}
+.greeting .powered .dot{width:6px;height:6px;border-radius:50%;background:#34c759;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+.kpi-card{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);transition:transform .2s ease,box-shadow .2s ease}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 2px 8px rgba(0,0,0,0.1),0 16px 36px rgba(0,0,0,0.08)}
+.kpi-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#86868b;font-weight:600}
+.kpi-card .val{font-size:26px;font-weight:700;margin-top:3px;letter-spacing:-.02em}
+.kpi-card .delta{font-size:12px;margin-top:2px;font-weight:500}
+.up{color:#34c759}.down{color:#d32f2f}.flat{color:#86868b}
+.section{margin-top:32px}
+.section-hdr{font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.card{background:#fff;border-radius:14px;padding:26px;box-shadow:0 1px 3px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);margin-bottom:18px}
+.card h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.status-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0f0f2}
+.status-row:last-child{border-bottom:none}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.status-dot.green{background:#34c759}.status-dot.amber{background:#ff9f0a}.status-dot.red{background:#ff3b30}.status-dot.blue{background:#0071e3}
+.status-label{font-size:14px;font-weight:500;flex:1}
+.status-meta{font-size:12px;color:#86868b;text-align:right}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.04em}
+.tag-green{background:#e8f5e9;color:#2e7d32}.tag-amber{background:#fff3e0;color:#e65100}.tag-red{background:#fde8e8;color:#d32f2f}.tag-blue{background:#e3f2fd;color:#1565c0}.tag-gray{background:#f0f0f2;color:#6e6e73}
+.ask-bar{background:#fff;border-radius:14px;padding:20px 26px;box-shadow:0 1px 3px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);display:flex;align-items:center;gap:14px;margin-bottom:32px;cursor:pointer;transition:box-shadow .2s ease}
+.ask-bar:hover{box-shadow:0 2px 10px rgba(0,0,0,0.1),0 18px 40px rgba(0,0,0,0.08)}
+.ask-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#0071e3,#5856d6);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.ask-text{flex:1}
+.ask-text .prompt{font-size:15px;color:#86868b;font-weight:400}
+.ask-text .hint{font-size:12px;color:#d2d2d7;margin-top:2px}
+.chart-box{height:280px;width:100%}
+.chart-box-sm{height:240px;width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;padding:10px 12px;border-bottom:2px solid #e8e8ed;color:#1d1d1f;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f2;color:#333}
+tr:hover td{background:#fafafa}
+.agenda-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid #f0f0f2}
+.agenda-item:last-child{border-bottom:none}
+.agenda-time{font-size:13px;font-weight:600;color:#0071e3;white-space:nowrap;min-width:70px;padding-top:1px}
+.agenda-detail .agenda-title{font-size:14px;font-weight:600;color:#1d1d1f}
+.agenda-detail .agenda-meta{font-size:12px;color:#86868b;margin-top:2px}
+.insight{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f2}
+.insight:last-child{border-bottom:none}
+.insight .ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.insight .txt{font-size:13px;color:#333;line-height:1.5}
+.insight .txt strong{color:#1d1d1f}
+.prog-wrap{margin-top:8px}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:#6e6e73;margin-bottom:4px}
+.prog-bar{height:6px;border-radius:3px;background:#f0f0f2;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.region-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.region-card{background:#fafafa;border-radius:10px;padding:14px 16px;text-align:center;transition:background .2s ease}
+.region-card:hover{background:#f0f0f2}
+.region-card .r-name{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#86868b;font-weight:600}
+.region-card .r-val{font-size:22px;font-weight:700;margin-top:4px;letter-spacing:-.02em}
+.region-card .r-sub{font-size:11px;color:#6e6e73;margin-top:2px}
+.footer-note{text-align:center;font-size:11px;color:#86868b;margin-top:40px;padding-top:18px;border-top:1px solid #e8e8ed}
+@media screen and (max-width:900px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.region-grid{grid-template-columns:repeat(2,1fr)}}
+@media screen and (max-width:600px){.kpi-strip{grid-template-columns:1fr}.greeting .hello{font-size:26px}}
+@media print{
+  @page{margin:0;size:8.5in 999in}
+  body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .shell{max-width:100%!important;width:100%!important}
+  .ask-bar{display:none!important}
+  [class*="card"]{padding:18px!important;box-shadow:none!important;border:1px solid rgba(0,0,0,.08)}
+  [class*="grid"],[class*="row"]{gap:10px!important;margin-bottom:20px!important}
+  [class*="chart"]{height:240px!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  button,[role="button"]{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="greeting">
+    <div class="hello">Good morning, Rashhan.</div>
+    <div class="date">Thursday, May 21 2026 · Atlanta, GA · Pre-dinner briefing</div>
+    <div class="powered"><span class="dot"></span> Powered by Glean Work AI</div>
+  </div>
+  <div class="ask-bar">
+    <div class="ask-icon">✦</div>
+    <div class="ask-text">
+      <div class="prompt">Ask me anything across Eaton's enterprise…</div>
+      <div class="hint">"Where are RFQ approvals slowing down?" · "What should we show in Tuesday's demo?" · "How do we frame Glean vs point-solution AI?"</div>
+    </div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="lbl">Quote Package Automation Readiness</div>
+      <div class="val">68%</div>
+      <div class="delta up">↑ strong fit from today's discovery themes</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Priority Workflow Gaps</div>
+      <div class="val" style="color:#ff9f0a">4</div>
+      <div class="delta flat">— specs · RFQs · approvals · tribal knowledge</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Demo Scope Coverage</div>
+      <div class="val">3<span style="font-size:14px;color:#86868b"> core paths</span></div>
+      <div class="delta up">Sales eng · product · manufacturing handoff</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Persona Inputs Confirmed</div>
+      <div class="val">1<span style="font-size:14px;color:#86868b"> / 3</span></div>
+      <div class="delta up">Need 1–2 more before Tuesday</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Governance Confidence</div>
+      <div class="val" style="color:#34c759">High</div>
+      <div class="delta up">Trust + standardization are central to the story</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>🌐 Workflow Health — Live Status</h3>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">AI-enabled spec review motion</div><div class="status-meta">Active product-owner sponsorship</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Quote package automation use case</div><div class="status-meta">High-value wedge confirmed</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">RFQ + drawing-file ingestion</div><div class="status-meta">Needs clearer source-system map</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">Approval workflow visibility</div><div class="status-meta">Cross-functional handoffs still fragmented</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Trust & governance narrative</div><div class="status-meta">Strong executive resonance</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">Tribal knowledge capture</div><div class="status-meta">Retirement / ramp gap remains material</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">Tuesday day-in-the-life demo</div><div class="status-meta">Pending persona inputs from Rashhan</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">June value stream mapping prep</div><div class="status-meta">Opportunity to anchor broader buying motion</div></div>
+    </div>
+    <div class="card">
+      <h3>📅 Your Day — May 21</h3>
+      <div class="agenda-item"><div class="agenda-time">8:30a</div><div class="agenda-detail"><div class="agenda-title">Construction digitalization stand-up</div><div class="agenda-meta">Product + business process leads</div></div></div>
+      <div class="agenda-item"><div class="agenda-time">10:00a</div><div class="agenda-detail"><div class="agenda-title">Spec review workflow check-in</div><div class="agenda-meta">Model outputs, exception handling, next data needs</div></div></div>
+      <div class="agenda-item"><div class="agenda-time">1:00p</div><div class="agenda-detail"><div class="agenda-title">Sales engineering alignment</div><div class="agenda-meta">Quote velocity, approvals, manufacturing coordination</div></div></div>
+      <div class="agenda-item"><div class="agenda-time">3:30p</div><div class="agenda-detail"><div class="agenda-title">Glean pre-dinner intro</div><div class="agenda-meta">Kelli McIvor, Tony Welter, Claire Owens</div></div></div>
+      <div class="agenda-item"><div class="agenda-time">5:45p</div><div class="agenda-detail"><div class="agenda-title">Atlanta AI Executive Dinner</div><div class="agenda-meta">Peer discussion on infrastructure + AI adoption</div></div></div>
+      <div class="agenda-item"><div class="agenda-time">Next Tue</div><div class="agenda-detail"><div class="agenda-title">Day-in-the-life demo</div><div class="agenda-meta">Goal: show concrete Eaton workflows before June mapping</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-hdr">📡 Workflow Performance Signals</div>
+    <div class="grid-2">
+      <div class="card"><h3>Cycle Time by Workflow Stage (days)</h3><div id="latencyChart" class="chart-box-sm"></div></div>
+      <div class="card"><h3>Exception Volume — Top Work Areas</h3><div id="bandwidthChart" class="chart-box-sm"></div></div>
+    </div>
+    <div class="card">
+      <h3>Function Coverage Summary</h3>
+      <div class="region-grid">
+        <div class="region-card"><div class="r-name">Sales Engineering</div><div class="r-val" style="color:#34c759">Ready</div><div class="r-sub">Clear pain + measurable value</div></div>
+        <div class="region-card"><div class="r-name">Product</div><div class="r-val" style="color:#34c759">Active</div><div class="r-sub">Spec-review ownership in place</div></div>
+        <div class="region-card"><div class="r-name">Manufacturing</div><div class="r-val" style="color:#ff9f0a">Partial</div><div class="r-sub">Need handoff and approval detail</div></div>
+        <div class="region-card"><div class="r-name">Supply Chain</div><div class="r-val" style="color:#ff9f0a">Linked</div><div class="r-sub">Palantir context exists; path still forming</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>🔒 Workflow Automation Readiness</h3><div id="securityRadar" class="chart-box-sm"></div></div>
+    <div class="card">
+      <h3>☁️ Operational Readiness Signals</h3>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">AI-enabled specification review tool</div><div class="status-meta">Existing motion already underway</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Construction digitalization strategy</div><div class="status-meta">Embedding AI, not bolting it on</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">Unstructured document access</div><div class="status-meta">Specs, RFQs, drawings span multiple systems</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">Quote approval orchestration</div><div class="status-meta">Human bandwidth still the bottleneck</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Governance and permissions model</div><div class="status-meta">Important and well aligned with Glean story</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">Persona expansion for demo</div><div class="status-meta">1–2 additional roles requested</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>🛡️ Workflow Friction — Last 12 Weeks</h3><div id="threatChart" class="chart-box-sm"></div></div>
+    <div class="card">
+      <h3>🤖 AI & Digital Transformation Pipeline</h3>
+      <table>
+        <thead><tr><th>Initiative</th><th>Owner</th><th>Phase</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>AI-enabled specification review</td><td>Rashhan Siddique</td><td>In motion</td><td><span class="tag tag-green">Active</span></td></tr>
+          <tr><td>Quote package automation</td><td>Sales + Product</td><td>Discovery</td><td><span class="tag tag-blue">Priority</span></td></tr>
+          <tr><td>Day-in-the-life demo</td><td>Kelli McIvor</td><td>Planning</td><td><span class="tag tag-amber">Next</span></td></tr>
+          <tr><td>June value stream mapping</td><td>Eaton stakeholders</td><td>Upcoming</td><td><span class="tag tag-blue">On Track</span></td></tr>
+          <tr><td>Supply chain data linkage</td><td>Eaton + Palantir</td><td>Existing path</td><td><span class="tag tag-gray">Context</span></td></tr>
+          <tr><td>Enterprise context layer evaluation</td><td>Eaton + Glean</td><td>Assessment</td><td><span class="tag tag-blue">Open</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>🏭 Engineer-to-Order Workflow Tracker</h3>
+      <div style="display:flex;gap:24px;margin-bottom:16px">
+        <div style="text-align:center;flex:1"><div style="font-size:28px;font-weight:700;color:#0071e3">4</div><div style="font-size:11px;color:#86868b;margin-top:2px">Core Workstreams</div></div>
+        <div style="text-align:center;flex:1"><div style="font-size:28px;font-weight:700;color:#34c759">2</div><div style="font-size:11px;color:#86868b;margin-top:2px">Immediate Demo Goals</div></div>
+        <div style="text-align:center;flex:1"><div style="font-size:28px;font-weight:700;color:#ff9f0a">June</div><div style="font-size:11px;color:#86868b;margin-top:2px">Mapping Milestone</div></div>
+      </div>
+      <div class="prog-wrap"><div class="prog-label"><span>Specs / RFQ understanding</span><span>62%</span></div><div class="prog-bar"><div class="prog-fill" style="width:62%;background:#0071e3"></div></div></div>
+      <div class="prog-wrap" style="margin-top:10px"><div class="prog-label"><span>Quote package automation story</span><span>58%</span></div><div class="prog-bar"><div class="prog-fill" style="width:58%;background:#34c759"></div></div></div>
+      <div class="prog-wrap" style="margin-top:10px"><div class="prog-label"><span>Governance / trust alignment</span><span>71%</span></div><div class="prog-bar"><div class="prog-fill" style="width:71%;background:#ff9f0a"></div></div></div>
+      <div class="prog-wrap" style="margin-top:10px"><div class="prog-label"><span>Cross-functional persona coverage</span><span>33%</span></div><div class="prog-bar"><div class="prog-fill" style="width:33%;background:#d2d2d7"></div></div></div>
+    </div>
+    <div class="card"><h3>📊 Eaton Business Snapshot</h3><div id="revenueChart" class="chart-box-sm"></div></div>
+  </div>
+  <div class="section">
+    <div class="section-hdr">✦ AI-Surfaced Insights — Things You Should Know</div>
+    <div class="card">
+      <div class="insight"><div class="ico" style="background:#e8f5e9">💡</div><div class="txt"><strong>Eaton's AI motion is being framed as workflow-native, not bolt-on</strong> — today's discussion repeatedly came back to embedding AI into construction digitalization and seller / engineering workflows rather than adding another standalone assistant.</div></div>
+      <div class="insight"><div class="ico" style="background:#fff3e0">🟡</div><div class="txt"><strong>The cleanest wedge is quote package automation</strong> — specs, RFQs, drawings, approvals, and manufacturing coordination all ladder into quote velocity, quote accuracy, and lead-time reduction.</div></div>
+      <div class="insight"><div class="ico" style="background:#e3f2fd">📘</div><div class="txt"><strong>Eaton's public digitalization language matches the meeting</strong> — their external materials already talk about AI analyzing drawings and specifications, live collaboration, Project Center, and reducing timelines through digital tools.</div></div>
+      <div class="insight"><div class="ico" style="background:#fde8e8">🔴</div><div class="txt"><strong>Tribal knowledge is the scaling risk</strong> — the retirement / ramp gap and fragmented information landscape could block adoption unless the workflow is grounded in enterprise context and clear permissions.</div></div>
+      <div class="insight"><div class="ico" style="background:#e8f5e9">✅</div><div class="txt"><strong>Tuesday's demo is the moment to widen the buying motion</strong> — bringing 1–2 additional personas into the walkthrough before June value-stream mapping can move this from one use case to a broader enterprise platform conversation.</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-hdr">👥 Team & Peer Signals</div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Person</th><th>Role</th><th>Top Item Today</th><th>Needs You</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Rashhan Siddique</strong></td><td>AI systems / product owner</td><td>Shape Tuesday's demo around real Eaton workflow pain</td><td><span class="tag tag-blue">Action</span></td></tr>
+          <tr><td><strong>Kelli McIvor</strong></td><td>Strategic Account Executive</td><td>Build day-in-the-life walkthrough + next-step asset</td><td><span class="tag tag-blue">Collaborate</span></td></tr>
+          <tr><td><strong>Tony Welter</strong></td><td>Strategic accounts lead</td><td>Anchor governance and platform differentiation story</td><td><span class="tag tag-green">Ready</span></td></tr>
+          <tr><td><strong>Sales Engineering</strong></td><td>Workflow stakeholder group</td><td>Define highest-friction RFQ and quoting scenarios</td><td><span class="tag tag-amber">Input</span></td></tr>
+          <tr><td><strong>Manufacturing / Ops</strong></td><td>Downstream execution stakeholders</td><td>Clarify approval and handoff bottlenecks</td><td><span class="tag tag-amber">Review</span></td></tr>
+          <tr><td><strong>Supply Chain Data Owners</strong></td><td>Adjacent data partners</td><td>Map where Palantir context intersects with quoting</td><td><span class="tag tag-gray">Monitor</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="footer-note">
+    This is a vision of what your morning could look like — every workflow, every blocker, every decision signal surfaced automatically by Glean's Work AI platform. No dashboards to build. No tabs to open. Just ask. · Mock dashboard · May 2026
+  </div>
+</div>
+<script>
+var latChart = echarts.init(document.getElementById('latencyChart'),null,{renderer:'svg'});
+latChart.setOption({tooltip:{trigger:'axis',formatter:function(p){return p.map(function(s){return s.seriesName+': '+s.value+' days'}).join('<br>')}},legend:{bottom:0,textStyle:{fontSize:10,color:'#86868b'},itemWidth:12,itemHeight:8},grid:{left:50,right:16,top:16,bottom:40},xAxis:{type:'category',data:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],axisLabel:{fontSize:10,color:'#86868b'},axisLine:{lineStyle:{color:'#e8e8ed'}}},yAxis:{type:'value',min:0,max:12,axisLabel:{formatter:'{value}d',fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},series:[{name:'Spec Review',type:'line',data:[7,7,6,6,5,5,4],smooth:true,lineStyle:{color:'#0071e3',width:2},itemStyle:{color:'#0071e3'},symbolSize:4},{name:'RFQ Intake',type:'line',data:[8,8,8,7,7,6,6],smooth:true,lineStyle:{color:'#34c759',width:2},itemStyle:{color:'#34c759'},symbolSize:4},{name:'Approvals',type:'line',data:[11,10,10,9,9,8,8],smooth:true,lineStyle:{color:'#ff9f0a',width:2},itemStyle:{color:'#ff9f0a'},symbolSize:4},{name:'Final Package',type:'line',data:[9,9,8,8,7,7,6],smooth:true,lineStyle:{color:'#5856d6',width:2,type:'dashed'},itemStyle:{color:'#5856d6'},symbolSize:4}]});
+var bwChart = echarts.init(document.getElementById('bandwidthChart'),null,{renderer:'svg'});
+bwChart.setOption({tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},grid:{left:100,right:20,top:10,bottom:10},xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}',fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},yAxis:{type:'category',data:['Manual search','Drawing review','Approval routing','Quote config','Manufacturing handoff','Supplier lookup'].reverse(),axisLabel:{fontSize:11,color:'#333'},axisLine:{lineStyle:{color:'#e8e8ed'}}},series:[{type:'bar',barWidth:18,data:[{value:28,itemStyle:{color:'#d2d2d7',borderRadius:[0,4,4,0]}},{value:39,itemStyle:{color:'#d2d2d7',borderRadius:[0,4,4,0]}},{value:52,itemStyle:{color:'#0071e3',borderRadius:[0,4,4,0]}},{value:61,itemStyle:{color:'#0071e3',borderRadius:[0,4,4,0]}},{value:74,itemStyle:{color:'#ff9f0a',borderRadius:[0,4,4,0]}},{value:83,itemStyle:{color:'#ff9f0a',borderRadius:[0,4,4,0]}}],label:{show:true,position:'right',formatter:'{c}',fontSize:11,fontWeight:600,color:'#1d1d1f'}}]});
+var secRadar = echarts.init(document.getElementById('securityRadar'),null,{renderer:'svg'});
+secRadar.setOption({tooltip:{},radar:{indicator:[{name:'Data\nCoverage',max:10},{name:'Workflow\nFit',max:10},{name:'Persona\nAlignment',max:10},{name:'Governance',max:10},{name:'Change\nReadiness',max:10},{name:'Measurement',max:10}],shape:'circle',splitArea:{areaStyle:{color:['rgba(0,113,227,0.02)','rgba(0,113,227,0.04)']}},axisLine:{lineStyle:{color:'#d2d2d7'}},splitLine:{lineStyle:{color:'#e8e8ed'}}},series:[{type:'radar',data:[{value:[7,9,5,8,6,6],name:'Current',areaStyle:{color:'rgba(52,199,89,0.1)'},lineStyle:{color:'#34c759',width:2},itemStyle:{color:'#34c759'}},{value:[10,10,10,10,10,10],name:'Target',lineStyle:{color:'#d2d2d7',width:1,type:'dashed'},itemStyle:{color:'#d2d2d7'},areaStyle:{opacity:0}}]}]});
+var threatChart = echarts.init(document.getElementById('threatChart'),null,{renderer:'svg'});
+threatChart.setOption({tooltip:{trigger:'axis'},legend:{bottom:0,textStyle:{fontSize:10,color:'#86868b'},itemWidth:12,itemHeight:8},grid:{left:50,right:16,top:16,bottom:40},xAxis:{type:'category',data:['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7','Wk8','Wk9','Wk10','Wk11','Wk12'],axisLabel:{fontSize:10,color:'#86868b'},axisLine:{lineStyle:{color:'#e8e8ed'}}},yAxis:{type:'value',axisLabel:{fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},series:[{name:'Search / retrieval drag',type:'bar',stack:'total',barWidth:20,data:[18,17,16,15,14,13,12,11,10,10,9,8],itemStyle:{color:'#0071e3',borderRadius:[4,4,0,0]}},{name:'Approval delays',type:'bar',stack:'total',barWidth:20,data:[8,8,7,7,6,6,5,5,4,4,4,3],itemStyle:{color:'#ff9f0a',borderRadius:[4,4,0,0]}},{name:'Rework / exceptions',type:'bar',stack:'total',barWidth:20,data:[6,6,5,5,5,4,4,4,3,3,3,2],itemStyle:{color:'#ff3b30',borderRadius:[4,4,0,0]}}]});
+var revChart = echarts.init(document.getElementById('revenueChart'),null,{renderer:'svg'});
+revChart.setOption({tooltip:{trigger:'axis',formatter:'{b}: $ {c}B'},grid:{left:50,right:16,top:16,bottom:36},xAxis:{type:'category',data:["Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25","Q3'25","Q4'25"],axisLabel:{fontSize:10,color:'#86868b'},axisLine:{lineStyle:{color:'#e8e8ed'}}},yAxis:{type:'value',min:5.5,max:6.7,axisLabel:{formatter:'$ {value}B',fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},series:[{type:'bar',barWidth:24,data:[{value:5.94,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:6.13,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:6.20,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:5.97,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:5.94,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:6.02,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:6.35,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},{value:6.24,itemStyle:{color:'#0071e3',borderRadius:[4,4,0,0]}}]}]});
+window.addEventListener('resize',function(){latChart.resize();bwChart.resize();secRadar.resize();threatChart.resize();revChart.resize();});
+</script>
+</body>
+</html>
